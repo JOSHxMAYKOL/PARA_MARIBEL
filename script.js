@@ -7,8 +7,8 @@ console.clear();
 
 let scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000); 
-let camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 1, 1000);
-camera.position.set(0, 15, 50);
+let camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 1, 1500);
+camera.position.set(0, 25, 100);
 let renderer = new THREE.WebGLRenderer();
 renderer.setSize(innerWidth, innerHeight);
 document.body.appendChild(renderer.domElement);
@@ -22,7 +22,7 @@ let controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.enablePan = false;
 
-// (El resto del código de la galaxia y las estrellas no cambia)
+// (Código de la galaxia y las estrellas - SIN CAMBIOS)
 let gu = {
   time: {value: 0}
 }
@@ -138,45 +138,147 @@ let m = new THREE.PointsMaterial({
 
 let p = new THREE.Points(g,m);
 p.rotation.order ="ZYX";
-p.rotation.z = 0.2;
-scene.add(p)
+p.rotation.z = 0; 
+scene.add(p);
 
-// --- AÑADIR TEXTO 3D ---
+// --- OBJETOS DE TEXTO E IMÁGENES ---
+const floatingContentGroup = new THREE.Group();
+scene.add(floatingContentGroup);
+const billboardObjects = [];
+
+const halagos = [
+  "Eres mi todo.", "Me encantas.", "Te adoro.", "Solo tú.", "Eres increíble.", "Eres hermosa.",
+  "Eres maravillosa.", "Eres preciosa.", "Eres perfecta.", "Eres mi luz.", "Qué bella.", "Me fascinas.",
+  "Sé mi novia.", "¿Quieres ser mi novia?", "¿Aceptas ser mi novia?", "¿Mi compañera?",
+  "Tu risa es mi favorita.", "Qué ojazos tienes.", "Me vuelves loco/a.", "Eres un sol.",
+  "Qué suerte tenerte.", "Eres mi calma.", "Te admiro mucho.", "Qué bonita eres.", "Te quiero a mi lado.",
+  "Me haces feliz.", "Pienso en ti siempre.", "Mi día eres tú.", "Eres mi razón.", "Cambiaste mi vida.",
+  "Contigo, todo.", "Eres especial.", "Te necesito.", "Esto es real.", "Qué ojos.", "Estás radiante.",
+  "Tu sonrisa me mata.", "Qué bien te ves hoy.", "Tu pelo es increíble.", "Qué cuerpo.", "Eres divina.",
+  "Eres arte.", "Qué labios.", "Perfecta.", "Mi reina.", "Mi chica ideal.", "Eres brillante.",
+  "Qué inteligente.", "Eres la mejor.", "Qué dulce.", "Tu risa es magia.", "Qué valiente.",
+  "Me inspiras.", "Eres admirable.", "Qué fuerza.", "Me diviertes.", "Qué gran corazón.",
+  "Eres única.", "Me sorprendes.", "Qué energía.", "Te amo.", "Me enamoras.", "Pienso en ti.",
+  "Mi vida eres tú.", "Mi otra mitad.", "Te necesito.", "Eres mi deseo.", "Eres mi sueño.", "Soy tuyo/a.",
+  "Lo eres todo.", "Este amor es real.", "Eres mi paz.", "Mi lugar seguro.", "Me calmas.",
+  "Qué suerte la mía.", "Eres mi hogar.", "Mi mejor momento.", "Mejor contigo.", "Me completas.",
+  "Eres la razón.", "Qué conexión.", "Mi destino.", "Qué alegría.", "Eres mi favorita.",
+  "Eres mi mejor amiga.", "Qué tierna.", "Me has ganado.", "Qué maravilla.", "Eres magia.",
+  "Soy tu fan.", "Me encantas completa.", "Qué gran persona.", "Eres un regalo.", "Mi bendición.",
+  "Eres mi meta.", "Increíble tú.", "Te quiero siempre.", "Quédate conmigo.", "Juntos, ¿sí?",
+  "Mi futuro eres tú.", "Quiero una vida contigo.", "Eres mi elección.", "Te elijo a ti.",
+  "Eres mi plan.", "Quiero cuidarte.", "Te veo en todo.", "Mi amor.", "Mi cielo.", "Mi corazón.",
+  "Mi vida.", "Mi dueña.", "Eres un milagro.", "No hay otra igual.", "Mi adicción.", "Mi obsesión.",
+  "La mejor del mundo.", "Qué suerte verte.", "Te mereces todo.", "Mi crush eterno.", "Contigo me quedo.",
+  "Eres mi razón de ser."
+];
+
+const imageUrlsBase = './';
+const imageFiles = [];
+for (let i = 1; i <= 100; i++) {
+  imageFiles.push(`${imageUrlsBase}img-${i}.jpg`);
+}
+
+const allContent = [];
+halagos.forEach(text => allContent.push({ type: 'text', value: text }));
+imageFiles.forEach(url => allContent.push({ type: 'image', value: url }));
+
 const fontLoader = new FontLoader();
-// ¡CAMBIO DE FUENTE AQUÍ! Usamos "gentilis" en lugar de "helvetiker".
+const textureLoader = new THREE.TextureLoader();
 const fontURL = 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/gentilis_regular.typeface.json';
 
 fontLoader.load(fontURL, function (font) {
-  const textGeometry = new TextGeometry('TE AMO MARIBEL', {
-    font: font,
-    size: 5,
-    height: 0.5,
-    curveSegments: 12,
-    bevelEnabled: true,
-    bevelThickness: 0.1,
-    bevelSize: 0.1,
-    bevelOffset: 0,
-    bevelSegments: 5
-  });
-
-  textGeometry.center();
-  const textMaterial = new THREE.MeshPhongMaterial({ color: 0xFF69B4 }); // Rosado
-  const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-
-  textMesh.position.y = 15;
-  textMesh.rotation.x = -Math.PI / 10;
   
-  scene.add(textMesh);
+  const mainTextMaterial = new THREE.MeshBasicMaterial({ color: 0xFF1493 });
+  const floatingTextMaterial = new THREE.MeshBasicMaterial({ color: 0xFF1493 });
+
+  const mainTextGeometry = new TextGeometry('TE AMO MARIBEL', {
+    font: font, size: 5, height: 0.5, curveSegments: 12, bevelEnabled: true,
+    bevelThickness: 0.1, bevelSize: 0.1, bevelOffset: 0, bevelSegments: 5
+  });
+  mainTextGeometry.center();
+  const mainTextMesh = new THREE.Mesh(mainTextGeometry, mainTextMaterial);
+  mainTextMesh.position.y = 15;
+  scene.add(mainTextMesh);
+  billboardObjects.push(mainTextMesh);
+  
+  allContent.forEach((item) => {
+    const pos = new THREE.Vector3().randomDirection();
+    const randomRadius = 40 + Math.random() * 50;
+    pos.multiplyScalar(randomRadius);
+    
+    if (item.type === 'text') {
+      const textGeo = new TextGeometry(item.value, { font: font, size: 1.5, height: 0.1 });
+      textGeo.center();
+      const textMesh = new THREE.Mesh(textGeo, floatingTextMaterial);
+      textMesh.position.copy(pos);
+      floatingContentGroup.add(textMesh);
+      billboardObjects.push(textMesh);
+    } else if (item.type === 'image') {
+      textureLoader.load(item.value, function(texture) {
+        const planeMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
+        const planeGeometry = new THREE.PlaneGeometry(8, 8);
+        const imageMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+        imageMesh.position.copy(pos);
+        floatingContentGroup.add(imageMesh);
+        billboardObjects.push(imageMesh);
+      });
+    }
+  });
 });
 
-// Añadir luces para el texto
+// --- SISTEMA DE CORAZONES ALREDEDOR DE LA GALAXIA ---
+let galaxyHearts;
+const heartParticleCount = 1500;
+const heartTextureUrl = './corazon.svg';
+
+textureLoader.load(heartTextureUrl, (texture) => {
+  const heartGeometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(heartParticleCount * 3);
+  const colors = new Float32Array(heartParticleCount * 3);
+
+  const color = new THREE.Color(0xFF69B4);
+
+  for (let i = 0; i < heartParticleCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    // ¡CAMBIO AQUÍ! Hacer el anillo más ancho
+    const radius = 15 + Math.random() * 90; // Ahora el radio varía entre 15 y 60 (ancho de 45)
+    
+    const x = Math.cos(angle) * radius;
+    const z = Math.sin(angle) * radius;
+    const y = (Math.random() - 0.5) * 100;
+
+    positions[i * 3] = x;
+    positions[i * 3 + 1] = y;
+    positions[i * 3 + 2] = z;
+
+    color.setHSL(0.9 + Math.random() * 0.1, 1, 0.7 + Math.random() * 0.2);
+    colors[i * 3] = color.r;
+    colors[i * 3 + 1] = color.g;
+    colors[i * 3 + 2] = color.b;
+  }
+
+  heartGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  heartGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const heartMaterial = new THREE.PointsMaterial({
+    map: texture,
+    size: 2.5,
+    vertexColors: true,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+
+  galaxyHearts = new THREE.Points(heartGeometry, heartMaterial);
+  scene.add(galaxyHearts);
+});
+
 const ambientLight = new THREE.AmbientLight(0x404040);
 scene.add(ambientLight);
-
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(0, 20, 10);
 scene.add(directionalLight);
-
 
 let clock = new THREE.Clock();
 
@@ -185,5 +287,17 @@ renderer.setAnimationLoop(()=> {
   let t = clock.getElapsedTime() * 0.5;
   gu.time.value = t * Math.PI;
   p.rotation.y = t * 0.05;
+
+  billboardObjects.forEach(obj => {
+    obj.lookAt(camera.position);
+  });
+
+  floatingContentGroup.rotation.y = t * -0.05;
+  floatingContentGroup.rotation.x = t * 0.02;
+
+  if (galaxyHearts) {
+    galaxyHearts.rotation.y = t * 0.05;
+  }
+
   renderer.render(scene , camera);
 });
