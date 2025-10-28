@@ -82,7 +82,7 @@ g.setAttribute("sizes", new THREE.Float32Attribute(sizes, 1));
 g.setAttribute("shift", new THREE.Float32Attribute(shift, 4));
 g.setAttribute("isStar", new THREE.Float32Attribute(particleType, 1));
 
-const PI2 = Math.PI * 2;
+const PI2 = Math.PI * 2; // Esta variable se usará en el shader
 
 let m = new THREE.PointsMaterial({
   size: 0.125,
@@ -114,10 +114,13 @@ let m = new THREE.PointsMaterial({
       `
     ).replace(
       `#include <begin_vertex>`,
+      // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
+      // Se inyecta el valor de PI2 (definido en JS) dentro del string del shader GLSL
       `#include <begin_vertex>
         float t = time;
-        float moveT = mod(shift.x + shift.z * t, PI2);
-        float moveS = mod(shift.y + shift.z * t, PI2);
+        const float PI2_GLSL = ${PI2}; // <-- Se define la constante en GLSL
+        float moveT = mod(shift.x + shift.z * t, PI2_GLSL); // <-- Se usa la constante
+        float moveS = mod(shift.y + shift.z * t, PI2_GLSL); // <-- Se usa la constante
         transformed += vec3(cos(moveS) * sin(moveT), cos(moveT), sin(moveS) * sin(moveT)) * shift.w;
       `
     );
@@ -172,7 +175,7 @@ const halagos = [
   "Eres mi razón de ser."
 ];
 
-const imageUrlsBase = './';
+const imageUrlsBase = './'; // Tus imágenes deben estar en la misma carpeta
 const imageFiles = [];
 for (let i = 1; i <= 100; i++) {
   imageFiles.push(`${imageUrlsBase}img-${i}.jpg`);
@@ -184,7 +187,10 @@ imageFiles.forEach(url => allContent.push({ type: 'image', value: url }));
 
 const fontLoader = new FontLoader();
 const textureLoader = new THREE.TextureLoader();
-const fontURL = 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/fonts/gentilis_regular.typeface.json';
+
+// --- ¡AQUÍ ESTÁ LA CORRECCIÓN 2! ---
+// URL de la fuente más estable
+const fontURL = 'https://cdn.jsdelivr.net/npm/three@0.136.0/examples/fonts/gentilis_regular.typeface.json';
 
 fontLoader.load(fontURL, function (font) {
   
@@ -229,7 +235,7 @@ fontLoader.load(fontURL, function (font) {
 // --- SISTEMA DE CORAZONES ALREDEDOR DE LA GALAXIA ---
 let galaxyHearts;
 const heartParticleCount = 1500;
-const heartTextureUrl = './corazon.svg';
+const heartTextureUrl = './corazon.svg'; // Tu corazón debe estar en la misma carpeta
 
 textureLoader.load(heartTextureUrl, (texture) => {
   const heartGeometry = new THREE.BufferGeometry();
@@ -241,7 +247,7 @@ textureLoader.load(heartTextureUrl, (texture) => {
   for (let i = 0; i < heartParticleCount; i++) {
     const angle = Math.random() * Math.PI * 2;
     // ¡CAMBIO AQUÍ! Hacer el anillo más ancho
-    const radius = 15 + Math.random() * 90; // Ahora el radio varía entre 15 y 60 (ancho de 45)
+    const radius = 15 + Math.random() * 90; // Ahora el radio varía entre 15 y 105 (ancho de 90)
     
     const x = Math.cos(angle) * radius;
     const z = Math.sin(angle) * radius;
